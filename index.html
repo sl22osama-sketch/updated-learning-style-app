@@ -1,0 +1,2627 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استبيان تحديد نمط التعلم - تحليل شخصي متقدم</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap');
+        
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        body { 
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: #000000 !important;
+            font-weight: 800 !important;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.8) !important;
+        }
+        
+        /* تطبيق اللون الأسود على جميع العناصر */
+        *, *::before, *::after {
+            color: #000000 !important;
+            font-weight: 800 !important;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.8) !important;
+        }
+        
+        /* استثناءات للعناصر التي تحتاج ألوان خاصة */
+        .btn-gradient, .btn-gradient *, 
+        .progress-bar, .progress-bar *,
+        .option-card.selected, .option-card.selected *,
+        .teacher-panel, .teacher-panel *,
+        #teacher-dashboard, #teacher-dashboard *,
+        .bg-green-500, .bg-red-500, .bg-blue-500, .bg-purple-500, .bg-orange-500,
+        .text-white, .text-green-400, .text-purple-400, .text-orange-400, .text-blue-400,
+        .text-red-400, .text-yellow-400, .text-indigo-400, .text-pink-400 {
+            color: white !important;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            color: #000000 !important;
+            font-weight: 800 !important;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.8) !important;
+        }
+        
+        .glass-effect *, .glass-effect *::before, .glass-effect *::after {
+            color: #000000 !important;
+            font-weight: 800 !important;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.8) !important;
+        }
+        
+        .question-card {
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(100px) scale(0.9);
+            opacity: 0;
+        }
+        
+        .question-card.active {
+            transform: translateX(0) scale(1);
+            opacity: 1;
+        }
+        
+        .question-card.prev {
+            transform: translateX(-100px) scale(0.9);
+            opacity: 0;
+        }
+        
+        .progress-bar {
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--primary-gradient);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .option-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .option-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .option-card:hover::before {
+            left: 100%;
+        }
+        
+        .option-card:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .option-card.selected {
+            background: var(--primary-gradient);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+        
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        
+        .result-card {
+            animation: resultAppear 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes resultAppear {
+            0% { 
+                transform: scale(0.8) rotateY(90deg);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.05) rotateY(45deg);
+            }
+            100% { 
+                transform: scale(1) rotateY(0deg);
+                opacity: 1;
+            }
+        }
+        
+        .percentage-circle {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+        
+        .percentage-circle svg {
+            transform: rotate(-90deg);
+        }
+        
+        .percentage-circle .circle-bg {
+            fill: none;
+            stroke: rgba(255,255,255,0.1);
+            stroke-width: 8;
+        }
+        
+        .percentage-circle .circle-progress {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dasharray 2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .btn-gradient {
+            background: var(--primary-gradient);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            color: #ffffff;
+        }
+        
+        .btn-gradient::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-gradient:hover::before {
+            left: 100%;
+        }
+        
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+        
+        .learning-style-icon {
+            font-size: 4rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .stats-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            color: #000000 !important;
+            font-weight: 800 !important;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.8) !important;
+        }
+        
+        .stats-card *, .stats-card *::before, .stats-card *::after {
+            color: #000000 !important;
+            font-weight: 800 !important;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.8) !important;
+        }
+        
+        .stats-card:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px);
+        }
+        
+        .typing-animation {
+            overflow: hidden;
+            border-right: 2px solid;
+            white-space: nowrap;
+            animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+        
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: currentColor; }
+        }
+
+        .teacher-panel {
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+        }
+        
+        .teacher-panel * {
+            font-weight: 700 !important;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
+        }
+
+        .student-card {
+            transition: all 0.3s ease;
+        }
+
+        .student-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Teacher Access Button -->
+    <div class="fixed top-4 left-4 z-50">
+        <button id="teacher-access-btn" onclick="showTeacherLogin()" class="glass-effect text-black p-3 rounded-full hover:scale-110 transition-all duration-300 shadow-lg" title="عرض نتائج جميع الطلاب">
+            <i class="fas fa-chart-bar text-xl"></i>
+        </button>
+    </div>
+
+    <!-- Results Summary Icon -->
+    <div class="fixed top-4 right-4 z-50" id="results-summary-icon">
+        <div class="glass-effect text-black p-3 rounded-full shadow-lg cursor-pointer hover:scale-110 transition-all duration-300" onclick="showQuickResults()" title="ملخص سريع للنتائج">
+            <i class="fas fa-users text-xl"></i>
+            <span id="total-participants" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold">0</span>
+        </div>
+    </div>
+
+    <!-- Teacher Login Modal -->
+    <div id="teacher-login-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+        <div class="glass-effect rounded-2xl p-8 max-w-md w-full mx-4">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-lock text-white text-2xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-2">دخول المعلم</h3>
+                <p class="text-white/80">أدخل كلمة المرور لعرض نتائج الطلاب</p>
+            </div>
+            <div class="space-y-4">
+                <input type="password" id="teacher-password" placeholder="كلمة المرور" 
+                       class="w-full p-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="flex gap-3">
+                    <button onclick="checkTeacherPassword()" class="flex-1 btn-gradient text-white font-semibold py-3 rounded-xl">
+                        دخول
+                    </button>
+                    <button onclick="hideTeacherLogin()" class="flex-1 glass-effect text-white font-semibold py-3 rounded-xl">
+                        إلغاء
+                    </button>
+                </div>
+            </div>
+            <div class="mt-4 text-center">
+                <p class="text-white/60 text-sm">كلمة المرور الافتراضية: teacher123</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teacher Dashboard -->
+    <div id="teacher-dashboard" class="hidden fixed inset-0 teacher-panel z-40 overflow-y-auto">
+        <div class="container mx-auto px-4 py-8">
+            <!-- Dashboard Header -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-4xl font-bold text-white mb-2">
+                        <i class="fas fa-chart-bar ml-2"></i>
+                        لوحة تحكم المعلم
+                    </h1>
+                    <p class="text-white/80">نتائج وإحصائيات جميع الطلاب المشاركين</p>
+                </div>
+                <button onclick="hideTeacherDashboard()" class="glass-effect text-white p-3 rounded-full hover:scale-110 transition-all duration-300">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Statistics Overview -->
+            <div class="grid md:grid-cols-4 gap-6 mb-8">
+                <div class="glass-effect rounded-2xl p-6 text-center">
+                    <div class="text-3xl text-blue-400 mb-2">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="text-2xl font-bold text-white" id="total-students">0</div>
+                    <div class="text-white/80">إجمالي الطلاب</div>
+                </div>
+                <div class="glass-effect rounded-2xl p-6 text-center">
+                    <div class="text-3xl text-green-400 mb-2">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="text-2xl font-bold text-white" id="visual-count">0</div>
+                    <div class="text-white/80">متعلم بصري</div>
+                </div>
+                <div class="glass-effect rounded-2xl p-6 text-center">
+                    <div class="text-3xl text-purple-400 mb-2">
+                        <i class="fas fa-ear-listen"></i>
+                    </div>
+                    <div class="text-2xl font-bold text-white" id="auditory-count">0</div>
+                    <div class="text-white/80">متعلم سمعي</div>
+                </div>
+                <div class="glass-effect rounded-2xl p-6 text-center">
+                    <div class="text-3xl text-orange-400 mb-2">
+                        <i class="fas fa-hand-paper"></i>
+                    </div>
+                    <div class="text-2xl font-bold text-white" id="kinesthetic-count">0</div>
+                    <div class="text-white/80">متعلم حركي</div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid lg:grid-cols-2 gap-8 mb-8">
+                <!-- Pie Chart -->
+                <div class="glass-effect rounded-2xl p-6">
+                    <h3 class="text-xl font-bold text-white mb-4 flex items-center">
+                        <i class="fas fa-chart-pie ml-2"></i>
+                        توزيع أنماط التعلم
+                    </h3>
+                    <div class="chart-container flex items-center justify-center">
+                        <canvas id="pieChart" width="300" height="300"></canvas>
+                    </div>
+                </div>
+
+                <!-- Bar Chart -->
+                <div class="glass-effect rounded-2xl p-6">
+                    <h3 class="text-xl font-bold text-white mb-4 flex items-center">
+                        <i class="fas fa-chart-bar ml-2"></i>
+                        مقارنة الأنماط
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="barChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Options -->
+            <div class="glass-effect rounded-2xl p-6 mb-8">
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center">
+                    <i class="fas fa-download ml-2"></i>
+                    تصدير البيانات
+                </h3>
+                <div class="flex flex-wrap gap-4">
+                    <button onclick="exportToExcel()" class="btn-gradient text-white px-6 py-3 rounded-xl flex items-center">
+                        <i class="fas fa-file-excel ml-2"></i>
+                        تصدير Excel شامل
+                    </button>
+                    <button onclick="exportToCSV()" class="glass-effect text-white px-6 py-3 rounded-xl flex items-center hover:bg-white/20">
+                        <i class="fas fa-file-csv ml-2"></i>
+                        تصدير CSV
+                    </button>
+                    <button onclick="exportToJSON()" class="glass-effect text-white px-6 py-3 rounded-xl flex items-center hover:bg-white/20">
+                        <i class="fas fa-file-code ml-2"></i>
+                        تصدير JSON
+                    </button>
+                    <button onclick="generateReport()" class="glass-effect text-white px-6 py-3 rounded-xl flex items-center hover:bg-white/20">
+                        <i class="fas fa-file-pdf ml-2"></i>
+                        تقرير مفصل
+                    </button>
+                    <button onclick="clearAllData()" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl flex items-center">
+                        <i class="fas fa-trash ml-2"></i>
+                        مسح جميع البيانات
+                    </button>
+                </div>
+            </div>
+
+            <!-- Students List -->
+            <div class="glass-effect rounded-2xl p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-white flex items-center">
+                        <i class="fas fa-list ml-2"></i>
+                        قائمة الطلاب والنتائج
+                    </h3>
+                    <div class="flex gap-2">
+                        <select id="filter-style" onchange="filterStudents()" class="bg-white/10 text-white rounded-lg px-3 py-2 border border-white/20">
+                            <option value="all">جميع الأنماط</option>
+                            <option value="visual">بصري</option>
+                            <option value="auditory">سمعي</option>
+                            <option value="kinesthetic">حركي</option>
+                        </select>
+                        <input type="text" id="search-student" placeholder="البحث عن طالب..." 
+                               onkeyup="searchStudents()" 
+                               class="bg-white/10 text-white rounded-lg px-3 py-2 border border-white/20 placeholder-white/60">
+                    </div>
+                </div>
+                <div id="students-list" class="space-y-4 max-h-96 overflow-y-auto">
+                    <!-- Students will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Results Modal -->
+    <div id="quick-results-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+        <div class="glass-effect rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-2xl font-bold text-black mb-2">ملخص النتائج</h3>
+                    <p class="text-gray-700">نظرة سريعة على نتائج جميع المشاركين</p>
+                </div>
+                <button onclick="hideQuickResults()" class="text-gray-600 hover:text-gray-800 p-2">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white/80 rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-blue-600" id="quick-total">0</div>
+                    <div class="text-sm text-gray-700">إجمالي المشاركين</div>
+                </div>
+                <div class="bg-white/80 rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-green-600" id="quick-visual">0</div>
+                    <div class="text-sm text-gray-700">بصري</div>
+                </div>
+                <div class="bg-white/80 rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-purple-600" id="quick-auditory">0</div>
+                    <div class="text-sm text-gray-700">سمعي</div>
+                </div>
+                <div class="bg-white/80 rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-orange-600" id="quick-kinesthetic">0</div>
+                    <div class="text-sm text-gray-700">حركي</div>
+                </div>
+            </div>
+
+            <!-- Recent Results -->
+            <div class="mb-6">
+                <h4 class="text-lg font-bold text-black mb-4">آخر النتائج</h4>
+                <div id="recent-results" class="space-y-3 max-h-60 overflow-y-auto">
+                    <!-- Recent results will be populated here -->
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3">
+                <button onclick="showTeacherLogin()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl">
+                    عرض التفاصيل الكاملة
+                </button>
+                <button onclick="exportQuickExcel()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl">
+                    <i class="fas fa-file-excel ml-2"></i>
+                    تصدير Excel
+                </button>
+                <button onclick="exportQuickCSV()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 rounded-xl">
+                    <i class="fas fa-file-csv ml-2"></i>
+                    تصدير CSV
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Name Input Modal -->
+    <div id="student-name-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+        <div class="glass-effect rounded-2xl p-8 max-w-md w-full mx-4">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-user text-white text-2xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-2">مرحباً بك!</h3>
+                <p class="text-white/80">أدخل اسمك لحفظ نتائجك</p>
+            </div>
+            <div class="space-y-4">
+                <input type="text" id="student-name-input" placeholder="اسم الطالب" 
+                       class="w-full p-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="flex gap-3">
+                    <button onclick="saveStudentName()" class="flex-1 btn-gradient text-white font-semibold py-3 rounded-xl">
+                        بدء الاختبار
+                    </button>
+                    <button onclick="skipNameInput()" class="flex-1 glass-effect text-white font-semibold py-3 rounded-xl">
+                        تخطي
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Particles Background -->
+    <div class="floating-particles">
+        <div class="particle" style="left: 10%; top: 20%; width: 4px; height: 4px; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 20%; top: 80%; width: 6px; height: 6px; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 60%; top: 30%; width: 3px; height: 3px; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 80%; top: 70%; width: 5px; height: 5px; animation-delay: 3s;"></div>
+        <div class="particle" style="left: 30%; top: 10%; width: 4px; height: 4px; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 70%; top: 90%; width: 6px; height: 6px; animation-delay: 5s;"></div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8 max-w-5xl relative z-10">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <div class="glass-effect rounded-3xl p-8 mb-8">
+                <div class="learning-style-icon mb-6">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h1 class="text-5xl font-bold text-black mb-4 typing-animation">استبيان تحديد نمط التعلم</h1>
+                <p class="text-xl text-black leading-relaxed max-w-2xl mx-auto">
+                    اكتشف أسلوب التعلم الأنسب لك من خلال تحليل علمي متقدم يساعدك على تحسين طريقة تعلمك
+                </p>
+                <div class="flex justify-center items-center mt-6 space-x-6 space-x-reverse">
+                    <div class="flex items-center text-black">
+                        <i class="fas fa-clock ml-2"></i>
+                        <span>5 دقائق</span>
+                    </div>
+                    <div class="flex items-center text-black">
+                        <i class="fas fa-chart-line ml-2"></i>
+                        <span>تحليل دقيق</span>
+                    </div>
+                    <div class="flex items-center text-black">
+                        <i class="fas fa-certificate ml-2"></i>
+                        <span>نتائج مخصصة</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="mb-10">
+            <div class="glass-effect rounded-2xl p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center text-black">
+                        <i class="fas fa-tasks ml-2"></i>
+                        <span class="font-semibold">مستوى التقدم</span>
+                    </div>
+                    <div class="text-black font-bold" id="progress-text">0 من 12</div>
+                </div>
+                <div class="relative">
+                    <div class="w-full bg-gray-300 rounded-full h-4 overflow-hidden">
+                        <div class="progress-bar h-4 rounded-full" id="progress-bar" style="width: 0%"></div>
+                    </div>
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-black text-sm font-semibold" id="progress-percentage">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Container -->
+        <div id="quiz-container" class="glass-effect rounded-3xl p-10 shadow-2xl">
+            <!-- Questions will be inserted here -->
+        </div>
+
+        <!-- Results Container -->
+        <div id="results-container" class="hidden">
+            <!-- Results will be shown here -->
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex justify-between items-center mt-10" id="navigation">
+            <button id="prev-btn" class="glass-effect text-black font-semibold py-4 px-8 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 flex items-center" disabled>
+                <i class="fas fa-arrow-right ml-2"></i>
+                السابق
+            </button>
+            
+            <div class="flex space-x-2 space-x-reverse" id="question-dots">
+                <!-- Question indicators will be inserted here -->
+            </div>
+            
+            <button id="next-btn" class="btn-gradient text-white font-semibold py-4 px-8 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center" disabled>
+                التالي
+                <i class="fas fa-arrow-left mr-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Student Results Tracking System
+        const TEACHER_PASSWORD = "teacher123"; // يمكنك تغيير كلمة المرور
+        let isTeacherMode = false;
+        let currentStudentName = "";
+
+        // Initialize results storage
+        if (!localStorage.getItem('studentResults')) {
+            localStorage.setItem('studentResults', JSON.stringify([]));
+        }
+
+        const questions = [
+            {
+                id: 1,
+                text: "عندما أتعلم شيئاً جديداً، أفضل:",
+                options: [
+                    { text: "قراءة التعليمات والمواد المكتوبة", type: "visual" },
+                    { text: "الاستماع إلى شرح شفهي", type: "auditory" },
+                    { text: "التجريب والممارسة العملية", type: "kinesthetic" }
+                ]
+            },
+            {
+                id: 2,
+                text: "عند حل المشاكل، أميل إلى:",
+                options: [
+                    { text: "رسم مخططات أو كتابة الأفكار", type: "visual" },
+                    { text: "مناقشة المشكلة مع الآخرين", type: "auditory" },
+                    { text: "تجربة حلول مختلفة عملياً", type: "kinesthetic" }
+                ]
+            },
+            {
+                id: 3,
+                text: "أتذكر المعلومات بشكل أفضل عندما:",
+                options: [
+                    { text: "أراها مكتوبة أو في صور", type: "visual" },
+                    { text: "أسمعها أو أكررها بصوت عالٍ", type: "auditory" },
+                    { text: "أربطها بتجربة عملية", type: "kinesthetic" }
+                ]
+            },
+            {
+                id: 4,
+                text: "في الفصل الدراسي، أركز أكثر عندما:",
+                options: [
+                    { text: "أرى العروض التقديمية والمخططات", type: "visual" },
+                    { text: "أستمع للمحاضرة والمناقشات", type: "auditory" },
+                    { text: "أشارك في الأنشطة العملية", type: "kinesthetic" }
+                ]
+            },
+            {
+                id: 5,
+                text: "عند تعلم مهارة جديدة، أبدأ بـ:",
+                options: [
+                    { text: "قراءة الدليل أو مشاهدة فيديو تعليمي", type: "visual" },
+                    { text: "الاستماع لشخص يشرح لي", type: "auditory" },
+                    { text: "المحاولة والتجريب مباشرة", type: "kinesthetic" }
+                ]
+            },
+            {
+                id: 6,
+                text: "أفضل الكتب التي تحتوي على:",
+                options: [
+                    { text: "صور ومخططات ورسوم بيانية", type: "visual" },
+                    { text: "حوارات وقصص يمكن قراءتها بصوت عالٍ", type: "auditory" },
+                    { text: "تمارين وأنشطة تفاعلية", type: "kinesthetic" }
+                ]
+            },
+            {
+                id: 7,
+                text: "عندما أعطي توجيهات لشخص ما، أفضل:",
+                options: [
+                    { text: "كتابة الخطوات أو رسم خريطة", type: "visual" },
+                    { text: "شرحها شفهياً", type: "auditory" },
+                    { text: "إظهار الطريق عملياً", type: "kinesthetic" }
+                ]
+            },
+            {
+                id: 8,
+                text: "في أوقات الفراغ، أستمتع بـ:",
+                options: [
+                    { text: "القراءة أو مشاهدة الأفلام", type: "visual" },
+                    { text: "الاستماع للموسيقى أو البودكاست", type: "auditory" },
+                    { text: "ممارسة الرياضة أو الأنشطة اليدوية", type: "kinesthetic" }
+                ]
+            },
+            {
+                id: 9,
+                text: "عند الدراسة للامتحانات، أفضل:",
+                options: [
+                    { text: "استخدام الملاحظات الملونة والمخططات", type: "visual" },
+                    { text: "قراءة المادة بصوت عالٍ أو مناقشتها", type: "auditory" },
+                    { text: "كتابة الملخصات وحل التمارين", type: "kinesthetic" }
+                ]
+            },
+            {
+                id: 10,
+                text: "أتعلم اللغات الجديدة بشكل أفضل من خلال:",
+                options: [
+                    { text: "قراءة النصوص ومشاهدة الترجمات", type: "visual" },
+                    { text: "الاستماع والمحادثة", type: "auditory" },
+                    { text: "الممارسة والتفاعل المباشر", type: "kinesthetic" }
+                ]
+            },
+            {
+                id: 11,
+                text: "عندما أحتاج للتركيز، أفضل بيئة:",
+                options: [
+                    { text: "هادئة ومنظمة بصرياً", type: "visual" },
+                    { text: "هادئة تماماً أو بموسيقى خفيفة", type: "auditory" },
+                    { text: "تسمح لي بالحركة والتنقل", type: "kinesthetic" }
+                ]
+            },
+            {
+                id: 12,
+                text: "أفهم المفاهيم المعقدة بشكل أفضل عندما:",
+                options: [
+                    { text: "أراها في شكل رسوم أو مخططات", type: "visual" },
+                    { text: "أسمع شرحاً مفصلاً عنها", type: "auditory" },
+                    { text: "أطبقها عملياً أو أجرب أمثلة", type: "kinesthetic" }
+                ]
+            }
+        ];
+
+        let currentQuestion = 0;
+        let answers = { visual: 0, auditory: 0, kinesthetic: 0 };
+
+        // Teacher Functions
+        function showTeacherLogin() {
+            document.getElementById('teacher-login-modal').classList.remove('hidden');
+            document.getElementById('teacher-password').focus();
+        }
+
+        function hideTeacherLogin() {
+            document.getElementById('teacher-login-modal').classList.add('hidden');
+            document.getElementById('teacher-password').value = '';
+        }
+
+        function checkTeacherPassword() {
+            const password = document.getElementById('teacher-password').value;
+            if (password === TEACHER_PASSWORD) {
+                isTeacherMode = true;
+                hideTeacherLogin();
+                showTeacherDashboard();
+            } else {
+                showNotification('كلمة المرور غير صحيحة', 'error');
+                document.getElementById('teacher-password').value = '';
+            }
+        }
+
+        function showTeacherDashboard() {
+            document.getElementById('teacher-dashboard').classList.remove('hidden');
+            loadTeacherDashboard();
+        }
+
+        function hideTeacherDashboard() {
+            document.getElementById('teacher-dashboard').classList.add('hidden');
+            isTeacherMode = false;
+        }
+
+        function loadTeacherDashboard() {
+            const results = JSON.parse(localStorage.getItem('studentResults') || '[]');
+            
+            // Update statistics
+            document.getElementById('total-students').textContent = results.length;
+            
+            const styleCounts = {
+                visual: results.filter(r => r.dominantStyle === 'visual').length,
+                auditory: results.filter(r => r.dominantStyle === 'auditory').length,
+                kinesthetic: results.filter(r => r.dominantStyle === 'kinesthetic').length
+            };
+            
+            document.getElementById('visual-count').textContent = styleCounts.visual;
+            document.getElementById('auditory-count').textContent = styleCounts.auditory;
+            document.getElementById('kinesthetic-count').textContent = styleCounts.kinesthetic;
+            
+            // Draw charts
+            drawPieChart(styleCounts);
+            drawBarChart(styleCounts);
+            
+            // Load students list
+            loadStudentsList(results);
+        }
+
+        function drawPieChart(styleCounts) {
+            const canvas = document.getElementById('pieChart');
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 100;
+            
+            const total = styleCounts.visual + styleCounts.auditory + styleCounts.kinesthetic;
+            if (total === 0) return;
+            
+            const colors = ['#10B981', '#8B5CF6', '#F59E0B'];
+            const labels = ['بصري', 'سمعي', 'حركي'];
+            const values = [styleCounts.visual, styleCounts.auditory, styleCounts.kinesthetic];
+            
+            let currentAngle = 0;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            values.forEach((value, index) => {
+                const sliceAngle = (value / total) * 2 * Math.PI;
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+                ctx.closePath();
+                ctx.fillStyle = colors[index];
+                ctx.fill();
+                
+                // Add labels
+                const labelAngle = currentAngle + sliceAngle / 2;
+                const labelX = centerX + Math.cos(labelAngle) * (radius * 0.7);
+                const labelY = centerY + Math.sin(labelAngle) * (radius * 0.7);
+                
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 14px Cairo';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${labels[index]}`, labelX, labelY);
+                ctx.fillText(`${Math.round((value/total)*100)}%`, labelX, labelY + 20);
+                
+                currentAngle += sliceAngle;
+            });
+        }
+
+        function drawBarChart(styleCounts) {
+            const canvas = document.getElementById('barChart');
+            const ctx = canvas.getContext('2d');
+            const maxValue = Math.max(styleCounts.visual, styleCounts.auditory, styleCounts.kinesthetic) || 1;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const barWidth = 80;
+            const barSpacing = 60;
+            const startX = 60;
+            const maxBarHeight = 200;
+            
+            const colors = ['#10B981', '#8B5CF6', '#F59E0B'];
+            const labels = ['بصري', 'سمعي', 'حركي'];
+            const values = [styleCounts.visual, styleCounts.auditory, styleCounts.kinesthetic];
+            
+            values.forEach((value, index) => {
+                const barHeight = (value / maxValue) * maxBarHeight;
+                const x = startX + index * (barWidth + barSpacing);
+                const y = canvas.height - barHeight - 50;
+                
+                // Draw bar
+                ctx.fillStyle = colors[index];
+                ctx.fillRect(x, y, barWidth, barHeight);
+                
+                // Draw value on top
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 16px Cairo';
+                ctx.textAlign = 'center';
+                ctx.fillText(value.toString(), x + barWidth/2, y - 10);
+                
+                // Draw label
+                ctx.fillText(labels[index], x + barWidth/2, canvas.height - 20);
+            });
+        }
+
+        function loadStudentsList(results) {
+            const container = document.getElementById('students-list');
+            
+            if (results.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-6xl text-white/30 mb-4">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <p class="text-white/60 text-lg">لا توجد نتائج طلاب حتى الآن</p>
+                        <p class="text-white/40">شارك رابط الاستبيان مع الطلاب لبدء جمع النتائج</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = results.map((result, index) => {
+                const styleInfo = {
+                    visual: { name: "بصري", icon: "fas fa-eye", color: "green" },
+                    auditory: { name: "سمعي", icon: "fas fa-ear-listen", color: "purple" },
+                    kinesthetic: { name: "حركي", icon: "fas fa-hand-paper", color: "orange" }
+                };
+                
+                const style = styleInfo[result.dominantStyle];
+                const date = new Date(result.timestamp).toLocaleDateString('ar-SA');
+                const time = new Date(result.timestamp).toLocaleTimeString('ar-SA');
+                
+                return `
+                    <div class="student-card glass-effect rounded-xl p-6 student-item" data-style="${result.dominantStyle}" data-name="${result.name.toLowerCase()}">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 rounded-full bg-${style.color}-500/20 flex items-center justify-center ml-4">
+                                    <i class="${style.icon} text-${style.color}-400"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-semibold text-lg">${result.name}</h4>
+                                    <p class="text-white/70">متعلم ${style.name}</p>
+                                </div>
+                            </div>
+                            <div class="text-left">
+                                <div class="text-white/60 text-sm">${date}</div>
+                                <div class="text-white/60 text-sm">${time}</div>
+                            </div>
+                        </div>
+                        <div class="mt-4 grid grid-cols-3 gap-4">
+                            <div class="text-center">
+                                <div class="text-green-400 font-bold">${result.percentages.visual}%</div>
+                                <div class="text-white/60 text-sm">بصري</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-purple-400 font-bold">${result.percentages.auditory}%</div>
+                                <div class="text-white/60 text-sm">سمعي</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-orange-400 font-bold">${result.percentages.kinesthetic}%</div>
+                                <div class="text-white/60 text-sm">حركي</div>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex justify-end">
+                            <button onclick="deleteStudentResult(${index})" class="text-red-400 hover:text-red-300 p-2">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterStudents() {
+            const filter = document.getElementById('filter-style').value;
+            const students = document.querySelectorAll('.student-item');
+            
+            students.forEach(student => {
+                if (filter === 'all' || student.dataset.style === filter) {
+                    student.style.display = 'block';
+                } else {
+                    student.style.display = 'none';
+                }
+            });
+        }
+
+        function searchStudents() {
+            const search = document.getElementById('search-student').value.toLowerCase();
+            const students = document.querySelectorAll('.student-item');
+            
+            students.forEach(student => {
+                if (student.dataset.name.includes(search)) {
+                    student.style.display = 'block';
+                } else {
+                    student.style.display = 'none';
+                }
+            });
+        }
+
+        function deleteStudentResult(index) {
+            if (confirm('هل أنت متأكد من حذف نتيجة هذا الطالب؟')) {
+                const results = JSON.parse(localStorage.getItem('studentResults') || '[]');
+                results.splice(index, 1);
+                localStorage.setItem('studentResults', JSON.stringify(results));
+                loadTeacherDashboard();
+                showNotification('تم حذف النتيجة بنجاح', 'success');
+            }
+        }
+
+        function exportToExcel() {
+            const results = JSON.parse(localStorage.getItem('studentResults') || '[]');
+            if (results.length === 0) {
+                showNotification('لا توجد بيانات للتصدير', 'error');
+                return;
+            }
+            
+            // Create workbook
+            const wb = XLSX.utils.book_new();
+            
+            // Main results sheet with enhanced data
+            const mainData = [
+                ['تقرير شامل - نتائج اختبار أنماط التعلم', '', '', '', '', '', '', '', '', ''],
+                ['تاريخ إنشاء التقرير: ' + new Date().toLocaleDateString('ar-SA'), '', '', '', '', '', '', '', '', ''],
+                ['وقت إنشاء التقرير: ' + new Date().toLocaleTimeString('ar-SA'), '', '', '', '', '', '', '', '', ''],
+                ['إجمالي عدد الطلاب: ' + results.length, '', '', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', '', '', ''],
+                ['رقم', 'اسم الطالب', 'النمط المهيمن', 'النسبة البصرية %', 'النسبة السمعية %', 'النسبة الحركية %', 'إجابات بصرية', 'إجابات سمعية', 'إجابات حركية', 'التاريخ', 'الوقت'],
+                ...results.map((result, index) => [
+                    index + 1,
+                    result.name,
+                    result.dominantStyle === 'visual' ? 'بصري' : result.dominantStyle === 'auditory' ? 'سمعي' : 'حركي',
+                    result.percentages.visual,
+                    result.percentages.auditory,
+                    result.percentages.kinesthetic,
+                    result.answers.visual,
+                    result.answers.auditory,
+                    result.answers.kinesthetic,
+                    new Date(result.timestamp).toLocaleDateString('ar-SA'),
+                    new Date(result.timestamp).toLocaleTimeString('ar-SA')
+                ])
+            ];
+            
+            const mainWs = XLSX.utils.aoa_to_sheet(mainData);
+            
+            // Set column widths
+            mainWs['!cols'] = [
+                { wch: 5 },   // رقم
+                { wch: 20 },  // اسم الطالب
+                { wch: 15 },  // النمط المهيمن
+                { wch: 12 },  // النسبة البصرية
+                { wch: 12 },  // النسبة السمعية
+                { wch: 12 },  // النسبة الحركية
+                { wch: 10 },  // إجابات بصرية
+                { wch: 10 },  // إجابات سمعية
+                { wch: 10 },  // إجابات حركية
+                { wch: 12 },  // التاريخ
+                { wch: 10 }   // الوقت
+            ];
+            
+            // Merge cells for header
+            mainWs['!merges'] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: 10 } }, // Title
+                { s: { r: 1, c: 0 }, e: { r: 1, c: 10 } }, // Date
+                { s: { r: 2, c: 0 }, e: { r: 2, c: 10 } }, // Time
+                { s: { r: 3, c: 0 }, e: { r: 3, c: 10 } }  // Total count
+            ];
+            
+            XLSX.utils.book_append_sheet(wb, mainWs, 'النتائج الرئيسية');
+            
+            // Statistics sheet
+            const styleCounts = {
+                visual: results.filter(r => r.dominantStyle === 'visual').length,
+                auditory: results.filter(r => r.dominantStyle === 'auditory').length,
+                kinesthetic: results.filter(r => r.dominantStyle === 'kinesthetic').length
+            };
+            
+            const averagePercentages = {
+                visual: results.length > 0 ? Math.round(results.reduce((sum, r) => sum + r.percentages.visual, 0) / results.length) : 0,
+                auditory: results.length > 0 ? Math.round(results.reduce((sum, r) => sum + r.percentages.auditory, 0) / results.length) : 0,
+                kinesthetic: results.length > 0 ? Math.round(results.reduce((sum, r) => sum + r.percentages.kinesthetic, 0) / results.length) : 0
+            };
+            
+            const statsData = [
+                ['الإحصائيات العامة', ''],
+                ['', ''],
+                ['توزيع أنماط التعلم', ''],
+                ['المتعلمون البصريون', styleCounts.visual + ' طالب (' + Math.round((styleCounts.visual/results.length)*100) + '%)'],
+                ['المتعلمون السمعيون', styleCounts.auditory + ' طالب (' + Math.round((styleCounts.auditory/results.length)*100) + '%)'],
+                ['المتعلمون الحركيون', styleCounts.kinesthetic + ' طالب (' + Math.round((styleCounts.kinesthetic/results.length)*100) + '%)'],
+                ['', ''],
+                ['متوسط النسب المئوية', ''],
+                ['متوسط النمط البصري', averagePercentages.visual + '%'],
+                ['متوسط النمط السمعي', averagePercentages.auditory + '%'],
+                ['متوسط النمط الحركي', averagePercentages.kinesthetic + '%'],
+                ['', ''],
+                ['النمط الأكثر شيوعاً', styleCounts.visual > styleCounts.auditory && styleCounts.visual > styleCounts.kinesthetic ? 'البصري' :
+                    styleCounts.auditory > styleCounts.kinesthetic ? 'السمعي' : 'الحركي'],
+                ['', ''],
+                ['معلومات إضافية', ''],
+                ['عدد الأسئلة في الاستبيان', questions.length],
+                ['تاريخ أول اختبار', results.length > 0 ? new Date(Math.min(...results.map(r => new Date(r.timestamp)))).toLocaleDateString('ar-SA') : 'لا يوجد'],
+                ['تاريخ آخر اختبار', results.length > 0 ? new Date(Math.max(...results.map(r => new Date(r.timestamp)))).toLocaleDateString('ar-SA') : 'لا يوجد']
+            ];
+            
+            const statsWs = XLSX.utils.aoa_to_sheet(statsData);
+            statsWs['!cols'] = [{ wch: 25 }, { wch: 30 }];
+            
+            XLSX.utils.book_append_sheet(wb, statsWs, 'الإحصائيات');
+            
+            // Individual student details sheet
+            const detailsData = [
+                ['تفاصيل الطلاب الفردية', '', '', '', ''],
+                ['', '', '', '', ''],
+                ['اسم الطالب', 'النمط المهيمن', 'الخصائص الرئيسية', 'نصائح التعلم', 'تاريخ الاختبار']
+            ];
+            
+            results.forEach(result => {
+                const styleInfo = {
+                    visual: {
+                        name: "المتعلم البصري",
+                        characteristics: "يفضل الصور والمخططات، يتذكر الوجوه أكثر من الأسماء، يحب التنظيم البصري",
+                        tips: "استخدم الخرائط الذهنية، الألوان المختلفة، الفيديوهات التعليمية"
+                    },
+                    auditory: {
+                        name: "المتعلم السمعي",
+                        characteristics: "يفضل المحاضرات والمناقشات، يتذكر الأسماء أكثر من الوجوه، يحب التعلم بالموسيقى",
+                        tips: "اقرأ بصوت عالٍ، شارك في المناقشات، استمع للبودكاست التعليمية"
+                    },
+                    kinesthetic: {
+                        name: "المتعلم الحركي",
+                        characteristics: "يفضل التعلم بالتجربة، يحتاج للحركة أثناء التفكير، يتعلم بالأنشطة العملية",
+                        tips: "مارس الأنشطة العملية، استخدم النماذج، خذ فترات راحة للحركة"
+                    }
+                };
+                
+                const style = styleInfo[result.dominantStyle];
+                detailsData.push([
+                    result.name,
+                    style.name,
+                    style.characteristics,
+                    style.tips,
+                    new Date(result.timestamp).toLocaleDateString('ar-SA')
+                ]);
+            });
+            
+            const detailsWs = XLSX.utils.aoa_to_sheet(detailsData);
+            detailsWs['!cols'] = [
+                { wch: 20 }, // اسم الطالب
+                { wch: 15 }, // النمط المهيمن
+                { wch: 50 }, // الخصائص الرئيسية
+                { wch: 50 }, // نصائح التعلم
+                { wch: 15 }  // تاريخ الاختبار
+            ];
+            
+            // Merge header cells
+            detailsWs['!merges'] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }
+            ];
+            
+            XLSX.utils.book_append_sheet(wb, detailsWs, 'تفاصيل الطلاب');
+            
+            // Write file
+            const fileName = `تقرير-شامل-أنماط-التعلم-${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+            
+            showNotification('تم تصدير ملف Excel الشامل بنجاح! 📊✨', 'success');
+        }
+
+        function exportToCSV() {
+            const results = JSON.parse(localStorage.getItem('studentResults') || '[]');
+            if (results.length === 0) {
+                showNotification('لا توجد بيانات للتصدير', 'error');
+                return;
+            }
+            
+            const headers = ['الاسم', 'النمط المهيمن', 'بصري %', 'سمعي %', 'حركي %', 'التاريخ', 'الوقت', 'إجمالي الإجابات'];
+            const csvContent = [
+                headers.join(','),
+                ...results.map(result => [
+                    `"${result.name}"`,
+                    result.dominantStyle === 'visual' ? 'بصري' : result.dominantStyle === 'auditory' ? 'سمعي' : 'حركي',
+                    result.percentages.visual + '%',
+                    result.percentages.auditory + '%',
+                    result.percentages.kinesthetic + '%',
+                    new Date(result.timestamp).toLocaleDateString('ar-SA'),
+                    new Date(result.timestamp).toLocaleTimeString('ar-SA'),
+                    (result.answers.visual + result.answers.auditory + result.answers.kinesthetic)
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob(['\ufeff' + csvContent], { 
+                type: 'text/csv;charset=utf-8' 
+            });
+            
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `نتائج-الطلاب-${new Date().toISOString().split('T')[0]}.csv`;
+            
+            // Ensure download happens
+            document.body.appendChild(a);
+            a.style.display = 'none';
+            a.click();
+            
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            showNotification('تم تصدير البيانات بنجاح! 📊', 'success');
+        }
+
+        function exportToJSON() {
+            const results = JSON.parse(localStorage.getItem('studentResults') || '[]');
+            if (results.length === 0) {
+                showNotification('لا توجد بيانات للتصدير', 'error');
+                return;
+            }
+            
+            // Create enhanced JSON with metadata
+            const exportData = {
+                metadata: {
+                    exportDate: new Date().toISOString(),
+                    totalStudents: results.length,
+                    exportedBy: "نظام تحليل أنماط التعلم",
+                    version: "1.0"
+                },
+                summary: {
+                    visual: results.filter(r => r.dominantStyle === 'visual').length,
+                    auditory: results.filter(r => r.dominantStyle === 'auditory').length,
+                    kinesthetic: results.filter(r => r.dominantStyle === 'kinesthetic').length
+                },
+                studentResults: results
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { 
+                type: 'application/json;charset=utf-8' 
+            });
+            
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `نتائج-الطلاب-${new Date().toISOString().split('T')[0]}.json`;
+            
+            // Ensure download happens
+            document.body.appendChild(a);
+            a.style.display = 'none';
+            a.click();
+            
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            showNotification('تم تصدير البيانات بنجاح! 💾', 'success');
+        }
+
+        function generateReport() {
+            const results = JSON.parse(localStorage.getItem('studentResults') || '[]');
+            if (results.length === 0) {
+                showNotification('لا توجد بيانات لإنشاء التقرير', 'error');
+                return;
+            }
+            
+            const styleCounts = {
+                visual: results.filter(r => r.dominantStyle === 'visual').length,
+                auditory: results.filter(r => r.dominantStyle === 'auditory').length,
+                kinesthetic: results.filter(r => r.dominantStyle === 'kinesthetic').length
+            };
+            
+            const averagePercentages = {
+                visual: Math.round(results.reduce((sum, r) => sum + r.percentages.visual, 0) / results.length),
+                auditory: Math.round(results.reduce((sum, r) => sum + r.percentages.auditory, 0) / results.length),
+                kinesthetic: Math.round(results.reduce((sum, r) => sum + r.percentages.kinesthetic, 0) / results.length)
+            };
+            
+            const reportContent = `تقرير شامل - تحليل أنماط التعلم للطلاب
+=====================================================
+
+معلومات التقرير:
+- تاريخ إنشاء التقرير: ${new Date().toLocaleDateString('ar-SA')}
+- وقت إنشاء التقرير: ${new Date().toLocaleTimeString('ar-SA')}
+- إجمالي عدد الطلاب المشاركين: ${results.length}
+- عدد الأسئلة في الاستبيان: ${questions.length}
+
+=====================================================
+الإحصائيات العامة:
+=====================================================
+
+توزيع أنماط التعلم:
+• المتعلمون البصريون: ${styleCounts.visual} طالب (${Math.round((styleCounts.visual/results.length)*100)}%)
+• المتعلمون السمعيون: ${styleCounts.auditory} طالب (${Math.round((styleCounts.auditory/results.length)*100)}%)
+• المتعلمون الحركيون: ${styleCounts.kinesthetic} طالب (${Math.round((styleCounts.kinesthetic/results.length)*100)}%)
+
+النمط الأكثر شيوعاً: ${
+    styleCounts.visual > styleCounts.auditory && styleCounts.visual > styleCounts.kinesthetic ? 'البصري' :
+    styleCounts.auditory > styleCounts.kinesthetic ? 'السمعي' : 'الحركي'
+}
+
+متوسط النسب المئوية:
+• متوسط النمط البصري: ${averagePercentages.visual}%
+• متوسط النمط السمعي: ${averagePercentages.auditory}%
+• متوسط النمط الحركي: ${averagePercentages.kinesthetic}%
+
+=====================================================
+تفاصيل الطلاب:
+=====================================================
+
+${results.map((result, index) => `${index + 1}. الطالب: ${result.name}
+   النمط المهيمن: ${result.dominantStyle === 'visual' ? 'بصري' : result.dominantStyle === 'auditory' ? 'سمعي' : 'حركي'}
+   التوزيع: بصري ${result.percentages.visual}% | سمعي ${result.percentages.auditory}% | حركي ${result.percentages.kinesthetic}%
+   تاريخ الاختبار: ${new Date(result.timestamp).toLocaleDateString('ar-SA')}
+   وقت الاختبار: ${new Date(result.timestamp).toLocaleTimeString('ar-SA')}
+   إجمالي الإجابات: ${result.answers.visual + result.answers.auditory + result.answers.kinesthetic}
+`).join('\n')}
+
+=====================================================
+التوصيات التعليمية:
+=====================================================
+
+للمتعلمين البصريين (${styleCounts.visual} طالب):
+• استخدم المخططات والرسوم البيانية والصور
+• اعتمد على الألوان في التمييز والتنظيم
+• وفر المواد المرئية والعروض التقديمية
+• استخدم الخرائط الذهنية والملاحظات المرمزة
+
+للمتعلمين السمعيين (${styleCounts.auditory} طالب):
+• اعتمد على المناقشات والشرح الشفهي
+• استخدم التسجيلات الصوتية والبودكاست
+• شجع القراءة بصوت عالٍ والحوار
+• وفر بيئة هادئة للاستماع والتركيز
+
+للمتعلمين الحركيين (${styleCounts.kinesthetic} طالب):
+• وفر الأنشطة العملية والتجارب
+• استخدم النماذج والمجسمات الملموسة
+• شجع الكتابة اليدوية والحركة أثناء التعلم
+• اسمح بفترات راحة للحركة والنشاط
+
+=====================================================
+استراتيجيات التدريس المقترحة:
+=====================================================
+
+1. التنويع في طرق التدريس لتناسب جميع الأنماط
+2. استخدام التعلم التفاعلي والمتعدد الحواس
+3. توفير خيارات متنوعة للطلاب في طريقة التعلم
+4. تقسيم الطلاب إلى مجموعات حسب أنماط التعلم أحياناً
+5. استخدام التكنولوجيا لدعم جميع أنماط التعلم
+
+=====================================================
+ملاحظات إضافية:
+=====================================================
+
+• هذا التحليل يعتمد على استبيان مكون من ${questions.length} سؤال
+• النتائج تعكس الميول الحالية وقد تتغير مع الوقت
+• معظم الطلاب يجمعون بين أكثر من نمط تعلم واحد
+• يُنصح بإعادة التقييم دورياً لمتابعة التطور
+
+=====================================================
+تم إنشاء هذا التقرير بواسطة:
+نظام تحليل أنماط التعلم المتقدم
+إصدار 1.0
+=====================================================`;
+            
+            const blob = new Blob(['\ufeff' + reportContent], { 
+                type: 'text/plain;charset=utf-8' 
+            });
+            
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `تقرير-شامل-أنماط-التعلم-${new Date().toISOString().split('T')[0]}.txt`;
+            
+            // Ensure download happens
+            document.body.appendChild(a);
+            a.style.display = 'none';
+            a.click();
+            
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            showNotification('تم إنشاء التقرير الشامل بنجاح! 📋', 'success');
+        }
+
+        function clearAllData() {
+            if (confirm('هل أنت متأكد من حذف جميع بيانات الطلاب؟ هذا الإجراء لا يمكن التراجع عنه.')) {
+                localStorage.removeItem('studentResults');
+                localStorage.setItem('studentResults', JSON.stringify([]));
+                loadTeacherDashboard();
+                showNotification('تم مسح جميع البيانات', 'success');
+            }
+        }
+
+        // Student Name Functions
+        function showStudentNameModal() {
+            document.getElementById('student-name-modal').classList.remove('hidden');
+            document.getElementById('student-name-input').focus();
+        }
+
+        function saveStudentName() {
+            const name = document.getElementById('student-name-input').value.trim();
+            if (name) {
+                currentStudentName = name;
+                document.getElementById('student-name-modal').classList.add('hidden');
+                renderQuestion();
+            } else {
+                showNotification('يرجى إدخال اسمك', 'error');
+            }
+        }
+
+        function skipNameInput() {
+            currentStudentName = "طالب مجهول";
+            document.getElementById('student-name-modal').classList.add('hidden');
+            renderQuestion();
+        }
+
+        // Save student result
+        function saveStudentResult(dominantStyle, percentages) {
+            const results = JSON.parse(localStorage.getItem('studentResults') || '[]');
+            
+            const newResult = {
+                name: currentStudentName,
+                dominantStyle: dominantStyle,
+                percentages: percentages,
+                answers: answers,
+                timestamp: new Date().toISOString()
+            };
+            
+            results.push(newResult);
+            localStorage.setItem('studentResults', JSON.stringify(results));
+            
+            // Update participants count
+            updateParticipantsCount();
+        }
+
+        function renderQuestion() {
+            const container = document.getElementById('quiz-container');
+            const question = questions[currentQuestion];
+            
+            container.innerHTML = `
+                <div class="question-card active">
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg ml-4">
+                                ${currentQuestion + 1}
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-black">السؤال ${currentQuestion + 1}</h2>
+                                <p class="text-gray-700">من أصل ${questions.length} أسئلة</p>
+                            </div>
+                        </div>
+                        <div class="text-gray-600">
+                            <i class="fas fa-question-circle text-3xl"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white/80 rounded-2xl p-6 mb-8 backdrop-blur-sm">
+                        <p class="text-xl text-black leading-relaxed font-medium">${question.text}</p>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        ${question.options.map((option, index) => `
+                            <label class="option-card flex items-center p-6 bg-white/80 backdrop-blur-sm rounded-2xl cursor-pointer border-2 border-transparent hover:border-gray-400">
+                                <div class="relative ml-4">
+                                    <input type="radio" name="question${question.id}" value="${option.type}" class="sr-only">
+                                    <div class="w-6 h-6 rounded-full border-2 border-gray-500 flex items-center justify-center radio-custom">
+                                        <div class="w-3 h-3 rounded-full bg-blue-600 opacity-0 transition-opacity duration-200"></div>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <span class="text-black text-lg font-medium leading-relaxed">${option.text}</span>
+                                </div>
+                                <div class="text-gray-600">
+                                    <i class="fas fa-chevron-left"></i>
+                                </div>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            updateProgress();
+            updateNavigation();
+            updateQuestionDots();
+            
+            // Add event listeners for radio buttons
+            const labels = container.querySelectorAll('label.option-card');
+            labels.forEach(label => {
+                label.addEventListener('click', () => {
+                    // Remove selected class from all options
+                    labels.forEach(l => l.classList.remove('selected'));
+                    // Add selected class to clicked option
+                    label.classList.add('selected');
+                    
+                    // Update radio button visual
+                    const radio = label.querySelector('input[type="radio"]');
+                    const customRadio = label.querySelector('.radio-custom div');
+                    
+                    // Reset all custom radios
+                    container.querySelectorAll('.radio-custom div').forEach(r => r.style.opacity = '0');
+                    // Show selected radio
+                    customRadio.style.opacity = '1';
+                    
+                    radio.checked = true;
+                    document.getElementById('next-btn').disabled = false;
+                    
+                    // Add a subtle animation
+                    label.style.transform = 'scale(1.02)';
+                    setTimeout(() => {
+                        label.style.transform = 'scale(1)';
+                    }, 150);
+                });
+            });
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            document.getElementById('progress-text').textContent = `${currentQuestion + 1} من ${questions.length}`;
+            document.getElementById('progress-percentage').textContent = `${Math.round(progress)}%`;
+        }
+
+        function updateNavigation() {
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            prevBtn.disabled = currentQuestion === 0;
+            nextBtn.disabled = true;
+            
+            if (currentQuestion === questions.length - 1) {
+                nextBtn.innerHTML = `
+                    عرض النتائج
+                    <i class="fas fa-chart-bar mr-2"></i>
+                `;
+            } else {
+                nextBtn.innerHTML = `
+                    التالي
+                    <i class="fas fa-arrow-left mr-2"></i>
+                `;
+            }
+        }
+
+        function updateQuestionDots() {
+            const dotsContainer = document.getElementById('question-dots');
+            dotsContainer.innerHTML = '';
+            
+            for (let i = 0; i < questions.length; i++) {
+                const dot = document.createElement('div');
+                dot.className = `w-3 h-3 rounded-full transition-all duration-300 ${
+                    i === currentQuestion 
+                        ? 'bg-white scale-125' 
+                        : i < currentQuestion 
+                            ? 'bg-green-400' 
+                            : 'bg-white/30'
+                }`;
+                dotsContainer.appendChild(dot);
+            }
+        }
+
+        function saveAnswer() {
+            const selectedOption = document.querySelector(`input[name="question${questions[currentQuestion].id}"]:checked`);
+            if (selectedOption) {
+                answers[selectedOption.value]++;
+            }
+        }
+
+        function showResults() {
+            const total = Object.values(answers).reduce((sum, count) => sum + count, 0);
+            const percentages = {
+                visual: Math.round((answers.visual / total) * 100),
+                auditory: Math.round((answers.auditory / total) * 100),
+                kinesthetic: Math.round((answers.kinesthetic / total) * 100)
+            };
+
+            const dominantStyle = Object.keys(percentages).reduce((a, b) => 
+                percentages[a] > percentages[b] ? a : b
+            );
+
+            // Save student result
+            saveStudentResult(dominantStyle, percentages);
+
+            const styleInfo = {
+                visual: {
+                    name: "المتعلم البصري",
+                    icon: "👁️",
+                    description: "تتعلم بشكل أفضل من خلال الرؤية والمشاهدة",
+                    characteristics: [
+                        "تفضل الصور والمخططات والرسوم البيانية",
+                        "تتذكر الوجوه أكثر من الأسماء",
+                        "تحب تنظيم المعلومات بصرياً",
+                        "تستفيد من الألوان والتمييز البصري"
+                    ],
+                    tips: [
+                        "استخدم الخرائط الذهنية والمخططات",
+                        "اكتب الملاحظات بألوان مختلفة",
+                        "شاهد الفيديوهات التعليمية",
+                        "استخدم الصور والرسوم التوضيحية"
+                    ]
+                },
+                auditory: {
+                    name: "المتعلم السمعي",
+                    icon: "👂",
+                    description: "تتعلم بشكل أفضل من خلال الاستماع والحديث",
+                    characteristics: [
+                        "تفضل المحاضرات والمناقشات",
+                        "تتذكر الأسماء أكثر من الوجوه",
+                        "تحب التعلم من خلال الموسيقى والإيقاع",
+                        "تستفيد من القراءة بصوت عالٍ"
+                    ],
+                    tips: [
+                        "اقرأ المواد بصوت عالٍ",
+                        "شارك في المناقشات الجماعية",
+                        "استمع للبودكاست التعليمية",
+                        "سجل الملاحظات الصوتية"
+                    ]
+                },
+                kinesthetic: {
+                    name: "المتعلم الحركي",
+                    icon: "🤲",
+                    description: "تتعلم بشكل أفضل من خلال الممارسة والحركة",
+                    characteristics: [
+                        "تفضل التعلم من خلال التجربة",
+                        "تحتاج للحركة أثناء التفكير",
+                        "تتعلم بشكل أفضل من خلال الأنشطة العملية",
+                        "تستفيد من استخدام اليدين في التعلم"
+                    ],
+                    tips: [
+                        "مارس الأنشطة العملية والتجارب",
+                        "استخدم النماذج والمجسمات",
+                        "خذ فترات راحة للحركة",
+                        "اكتب الملاحظات بخط اليد"
+                    ]
+                }
+            };
+
+            const resultHTML = `
+                <div class="result-card glass-effect rounded-3xl p-10 shadow-2xl">
+                    <!-- Header Section -->
+                    <div class="text-center mb-12">
+                        <div class="relative inline-block mb-6">
+                            <div class="learning-style-icon text-8xl mb-4">
+                                ${styleInfo[dominantStyle].icon === "👁️" ? '<i class="fas fa-eye"></i>' : 
+                                  styleInfo[dominantStyle].icon === "👂" ? '<i class="fas fa-ear-listen"></i>' : 
+                                  '<i class="fas fa-hand-paper"></i>'}
+                            </div>
+                            <div class="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white text-xs"></i>
+                            </div>
+                        </div>
+                        <h2 class="text-4xl font-bold text-black mb-4">🎉 تم تحليل نمط التعلم الخاص بك!</h2>
+                        <div class="bg-white/90 rounded-2xl p-6 backdrop-blur-sm">
+                            <h3 class="text-3xl font-bold text-black mb-2">${styleInfo[dominantStyle].name}</h3>
+                            <p class="text-xl text-black leading-relaxed">${styleInfo[dominantStyle].description}</p>
+                        </div>
+                        ${currentStudentName !== "طالب مجهول" ? `
+                            <div class="mt-4 text-black">
+                                <i class="fas fa-user ml-2"></i>
+                                مرحباً ${currentStudentName}! تم حفظ نتائجك بنجاح
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- Statistics Section -->
+                    <div class="grid md:grid-cols-3 gap-6 mb-12">
+                        ${Object.keys(percentages).map(style => `
+                            <div class="stats-card rounded-2xl p-6 text-center ${style === dominantStyle ? 'ring-2 ring-white/50' : ''}">
+                                <div class="percentage-circle mx-auto mb-4">
+                                    <svg width="120" height="120">
+                                        <circle class="circle-bg" cx="60" cy="60" r="52"></circle>
+                                        <circle class="circle-progress" cx="60" cy="60" r="52" 
+                                                stroke="${style === dominantStyle ? '#10B981' : '#6B7280'}"
+                                                stroke-dasharray="${(percentages[style] / 100) * 326.73} 326.73"
+                                                stroke-dashoffset="0">
+                                        </circle>
+                                    </svg>
+                                    <div class="absolute inset-0 flex items-center justify-center">
+                                        <div class="text-center">
+                                            <div class="text-2xl font-bold text-black">${percentages[style]}%</div>
+                                            <div class="text-sm text-gray-700">${styleInfo[style].name.split(' ')[1]}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h4 class="font-bold text-black mb-2">${styleInfo[style].name}</h4>
+                                <div class="text-4xl mb-2">
+                                    ${styleInfo[style].icon === "👁️" ? '<i class="fas fa-eye text-blue-600"></i>' : 
+                                      styleInfo[style].icon === "👂" ? '<i class="fas fa-ear-listen text-purple-600"></i>' : 
+                                      '<i class="fas fa-hand-paper text-green-600"></i>'}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <!-- Details Section -->
+                    <div class="grid lg:grid-cols-2 gap-8 mb-10">
+                        <div class="glass-effect rounded-2xl p-8">
+                            <div class="flex items-center mb-6">
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center ml-4">
+                                    <i class="fas fa-star text-white"></i>
+                                </div>
+                                <h4 class="text-2xl font-bold text-black">خصائصك كمتعلم</h4>
+                            </div>
+                            <div class="space-y-4">
+                                ${styleInfo[dominantStyle].characteristics.map((char, index) => 
+                                    `<div class="flex items-start p-4 bg-white/90 rounded-xl backdrop-blur-sm">
+                                        <div class="w-8 h-8 rounded-full bg-green-500/30 flex items-center justify-center ml-3 mt-1">
+                                            <span class="text-green-700 font-bold text-sm">${index + 1}</span>
+                                        </div>
+                                        <span class="text-black leading-relaxed">${char}</span>
+                                    </div>`
+                                ).join('')}
+                            </div>
+                        </div>
+
+                        <div class="glass-effect rounded-2xl p-8">
+                            <div class="flex items-center mb-6">
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center ml-4">
+                                    <i class="fas fa-lightbulb text-white"></i>
+                                </div>
+                                <h4 class="text-2xl font-bold text-black">نصائح للتعلم الفعال</h4>
+                            </div>
+                            <div class="space-y-4">
+                                ${styleInfo[dominantStyle].tips.map((tip, index) => 
+                                    `<div class="flex items-start p-4 bg-white/90 rounded-xl backdrop-blur-sm">
+                                        <div class="w-8 h-8 rounded-full bg-blue-500/30 flex items-center justify-center ml-3 mt-1">
+                                            <i class="fas fa-check text-blue-700 text-sm"></i>
+                                        </div>
+                                        <span class="text-black leading-relaxed">${tip}</span>
+                                    </div>`
+                                ).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Study Tips Section -->
+                    <div class="mb-10">
+                        <div class="text-center mb-8">
+                            <h3 class="text-3xl font-bold text-black mb-4">
+                                <i class="fas fa-graduation-cap ml-2"></i>
+                                دليل الدراسة المخصص لك
+                            </h3>
+                            <p class="text-black text-lg">نصائح عملية مصممة خصيصاً لنمط التعلم الخاص بك</p>
+                        </div>
+
+                        <div class="grid lg:grid-cols-2 gap-8">
+                            <!-- Study Techniques -->
+                            <div class="glass-effect rounded-2xl p-8">
+                                <div class="flex items-center mb-6">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center ml-4">
+                                        <i class="fas fa-book-open text-white"></i>
+                                    </div>
+                                    <h4 class="text-2xl font-bold text-black">تقنيات الدراسة المناسبة</h4>
+                                </div>
+                                <div class="space-y-4">
+                                    ${getStudyTechniques(dominantStyle).map((technique, index) => 
+                                        `<div class="flex items-start p-4 bg-white/90 rounded-xl backdrop-blur-sm hover:bg-white transition-all duration-300">
+                                            <div class="w-8 h-8 rounded-full bg-purple-500/30 flex items-center justify-center ml-3 mt-1">
+                                                <i class="fas fa-arrow-left text-purple-700 text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="text-black font-semibold mb-1">${technique.title}</h5>
+                                                <p class="text-gray-700 text-sm leading-relaxed">${technique.description}</p>
+                                            </div>
+                                        </div>`
+                                    ).join('')}
+                                </div>
+                            </div>
+
+                            <!-- Environment Setup -->
+                            <div class="glass-effect rounded-2xl p-8">
+                                <div class="flex items-center mb-6">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center ml-4">
+                                        <i class="fas fa-home text-white"></i>
+                                    </div>
+                                    <h4 class="text-2xl font-bold text-black">بيئة الدراسة المثالية</h4>
+                                </div>
+                                <div class="space-y-4">
+                                    ${getEnvironmentTips(dominantStyle).map((tip, index) => 
+                                        `<div class="flex items-start p-4 bg-white/90 rounded-xl backdrop-blur-sm hover:bg-white transition-all duration-300">
+                                            <div class="w-8 h-8 rounded-full bg-orange-500/30 flex items-center justify-center ml-3 mt-1">
+                                                <i class="fas fa-check text-orange-700 text-sm"></i>
+                                            </div>
+                                            <span class="text-black leading-relaxed">${tip}</span>
+                                        </div>`
+                                    ).join('')}
+                                </div>
+                            </div>
+
+                            <!-- Memory Techniques -->
+                            <div class="glass-effect rounded-2xl p-8">
+                                <div class="flex items-center mb-6">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 flex items-center justify-center ml-4">
+                                        <i class="fas fa-brain text-white"></i>
+                                    </div>
+                                    <h4 class="text-2xl font-bold text-black">تقنيات الحفظ والتذكر</h4>
+                                </div>
+                                <div class="space-y-4">
+                                    ${getMemoryTechniques(dominantStyle).map((technique, index) => 
+                                        `<div class="flex items-start p-4 bg-white/90 rounded-xl backdrop-blur-sm hover:bg-white transition-all duration-300">
+                                            <div class="w-8 h-8 rounded-full bg-teal-500/30 flex items-center justify-center ml-3 mt-1">
+                                                <i class="fas fa-lightbulb text-teal-700 text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="text-black font-semibold mb-1">${technique.title}</h5>
+                                                <p class="text-gray-700 text-sm leading-relaxed">${technique.description}</p>
+                                            </div>
+                                        </div>`
+                                    ).join('')}
+                                </div>
+                            </div>
+
+                            <!-- Exam Preparation -->
+                            <div class="glass-effect rounded-2xl p-8">
+                                <div class="flex items-center mb-6">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-center ml-4">
+                                        <i class="fas fa-clipboard-check text-white"></i>
+                                    </div>
+                                    <h4 class="text-2xl font-bold text-black">استراتيجيات الامتحانات</h4>
+                                </div>
+                                <div class="space-y-4">
+                                    ${getExamStrategies(dominantStyle).map((strategy, index) => 
+                                        `<div class="flex items-start p-4 bg-white/90 rounded-xl backdrop-blur-sm hover:bg-white transition-all duration-300">
+                                            <div class="w-8 h-8 rounded-full bg-yellow-500/30 flex items-center justify-center ml-3 mt-1">
+                                                <i class="fas fa-star text-yellow-700 text-sm"></i>
+                                            </div>
+                                            <span class="text-black leading-relaxed">${strategy}</span>
+                                        </div>`
+                                    ).join('')}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Resources -->
+                        <div class="glass-effect rounded-2xl p-8 mt-8">
+                            <div class="text-center mb-6">
+                                <div class="w-16 h-16 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-tools text-white text-2xl"></i>
+                                </div>
+                                <h4 class="text-2xl font-bold text-black mb-2">أدوات وموارد مفيدة</h4>
+                                <p class="text-black">تطبيقات ومواقع تساعدك في التعلم بطريقتك المفضلة</p>
+                            </div>
+                            
+                            <div class="grid md:grid-cols-3 gap-6">
+                                ${getRecommendedTools(dominantStyle).map(tool => 
+                                    `<div class="bg-white/90 rounded-xl p-6 text-center backdrop-blur-sm hover:bg-white transition-all duration-300">
+                                        <div class="text-3xl mb-3">${tool.icon}</div>
+                                        <h5 class="text-black font-semibold mb-2">${tool.name}</h5>
+                                        <p class="text-gray-700 text-sm leading-relaxed">${tool.description}</p>
+                                    </div>`
+                                ).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                        <button onclick="restartQuiz()" class="btn-gradient text-white font-bold py-4 px-8 rounded-2xl flex items-center">
+                            <i class="fas fa-redo ml-2"></i>
+                            إعادة الاختبار
+                        </button>
+                        <button onclick="downloadExcelResults()" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-8 rounded-2xl hover:scale-105 transition-all duration-300 flex items-center">
+                            <i class="fas fa-file-excel ml-2"></i>
+                            تحميل Excel
+                        </button>
+                        <button onclick="shareResults()" class="glass-effect text-white font-semibold py-4 px-8 rounded-2xl hover:scale-105 transition-all duration-300 flex items-center">
+                            <i class="fas fa-share-alt ml-2"></i>
+                            مشاركة النتائج
+                        </button>
+                        <button onclick="downloadResults()" class="glass-effect text-white font-semibold py-4 px-8 rounded-2xl hover:scale-105 transition-all duration-300 flex items-center">
+                            <i class="fas fa-download ml-2"></i>
+                            تحميل التقرير
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('navigation').style.display = 'none';
+            document.getElementById('results-container').innerHTML = resultHTML;
+            document.getElementById('results-container').classList.remove('hidden');
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            answers = { visual: 0, auditory: 0, kinesthetic: 0 };
+            currentStudentName = "";
+            
+            document.getElementById('quiz-container').style.display = 'block';
+            document.getElementById('navigation').style.display = 'flex';
+            document.getElementById('results-container').classList.add('hidden');
+            
+            showStudentNameModal();
+        }
+
+        // Event Listeners
+        document.getElementById('next-btn').addEventListener('click', () => {
+            saveAnswer();
+            
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        });
+
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                renderQuestion();
+            }
+        });
+
+        // Keyboard shortcuts for teacher login
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && document.getElementById('teacher-login-modal').classList.contains('hidden') === false) {
+                checkTeacherPassword();
+            }
+            if (e.key === 'Enter' && document.getElementById('student-name-modal').classList.contains('hidden') === false) {
+                saveStudentName();
+            }
+        });
+
+        // Study Tips Functions
+        function getStudyTechniques(style) {
+            const techniques = {
+                visual: [
+                    {
+                        title: "الخرائط الذهنية",
+                        description: "استخدم الألوان والرموز لربط المعلومات بصرياً وتسهيل التذكر"
+                    },
+                    {
+                        title: "الملاحظات المرمزة بالألوان",
+                        description: "خصص لون معين لكل موضوع أو نوع معلومة لتنظيم أفضل"
+                    },
+                    {
+                        title: "الرسوم البيانية والمخططات",
+                        description: "حول المعلومات النصية إلى رسوم بيانية وجداول مرئية"
+                    },
+                    {
+                        title: "البطاقات التعليمية المصورة",
+                        description: "اربط كل معلومة بصورة أو رمز يساعدك على التذكر"
+                    }
+                ],
+                auditory: [
+                    {
+                        title: "القراءة بصوت عالٍ",
+                        description: "اقرأ المواد الدراسية بصوت مسموع لتعزيز الفهم والحفظ"
+                    },
+                    {
+                        title: "التسجيلات الصوتية",
+                        description: "سجل الملخصات واستمع إليها أثناء المراجعة أو التنقل"
+                    },
+                    {
+                        title: "المناقشات الجماعية",
+                        description: "شارك في مجموعات دراسية وناقش المواضيع مع الزملاء"
+                    },
+                    {
+                        title: "الإيقاع والموسيقى",
+                        description: "استخدم الأناشيد أو الإيقاع لحفظ المعلومات المهمة"
+                    }
+                ],
+                kinesthetic: [
+                    {
+                        title: "الكتابة اليدوية",
+                        description: "اكتب الملاحظات بخط اليد لتعزيز الذاكرة الحركية"
+                    },
+                    {
+                        title: "النماذج والمجسمات",
+                        description: "استخدم الأدوات الملموسة والنماذج ثلاثية الأبعاد"
+                    },
+                    {
+                        title: "الحركة أثناء الدراسة",
+                        description: "امش أو تحرك أثناء المراجعة لتحفيز التركيز"
+                    },
+                    {
+                        title: "التطبيق العملي",
+                        description: "طبق ما تتعلمه عملياً من خلال التجارب والأنشطة"
+                    }
+                ]
+            };
+            return techniques[style] || [];
+        }
+
+        function getEnvironmentTips(style) {
+            const tips = {
+                visual: [
+                    "مكان دراسة منظم ومرتب بصرياً",
+                    "إضاءة جيدة وطبيعية قدر الإمكان",
+                    "استخدام الألوان في تنظيم المساحة",
+                    "تجنب الفوضى البصرية والمشتتات",
+                    "وضع الملصقات والخرائط على الجدران"
+                ],
+                auditory: [
+                    "مكان هادئ بعيد عن الضوضاء",
+                    "إمكانية تشغيل موسيقى هادئة أو أصوات طبيعية",
+                    "مساحة تسمح بالقراءة بصوت عالٍ",
+                    "تجنب الأصوات المشتتة والمقاطعات",
+                    "وجود مسجل صوتي أو تطبيقات التسجيل"
+                ],
+                kinesthetic: [
+                    "مساحة تسمح بالحركة والتنقل",
+                    "كرسي مريح يمكن تعديل وضعيته",
+                    "طاولة واسعة للكتابة والأنشطة العملية",
+                    "توفر أدوات ملموسة ومواد للتجريب",
+                    "إمكانية أخذ فترات راحة للحركة"
+                ]
+            };
+            return tips[style] || [];
+        }
+
+        function getMemoryTechniques(style) {
+            const techniques = {
+                visual: [
+                    {
+                        title: "قصر الذاكرة",
+                        description: "اربط المعلومات بأماكن مألوفة في منزلك أو مدرستك"
+                    },
+                    {
+                        title: "الصور الذهنية",
+                        description: "حول المعلومات المجردة إلى صور حية في ذهنك"
+                    },
+                    {
+                        title: "الرموز البصرية",
+                        description: "استخدم الرموز والأيقونات لتمثيل المفاهيم المعقدة"
+                    }
+                ],
+                auditory: [
+                    {
+                        title: "التكرار الصوتي",
+                        description: "كرر المعلومات بصوت عالٍ عدة مرات بإيقاعات مختلفة"
+                    },
+                    {
+                        title: "القوافي والأناشيد",
+                        description: "حول المعلومات إلى قوافي أو أغاني سهلة التذكر"
+                    },
+                    {
+                        title: "الشرح للآخرين",
+                        description: "اشرح ما تعلمته لشخص آخر لتثبيت المعلومات"
+                    }
+                ],
+                kinesthetic: [
+                    {
+                        title: "الكتابة المتكررة",
+                        description: "اكتب المعلومات المهمة عدة مرات بخط اليد"
+                    },
+                    {
+                        title: "الحركات الجسدية",
+                        description: "اربط كل معلومة بحركة أو إيماءة معينة"
+                    },
+                    {
+                        title: "التمثيل والمحاكاة",
+                        description: "مثل المفاهيم أو الأحداث بجسدك لتعزيز الذاكرة"
+                    }
+                ]
+            };
+            return techniques[style] || [];
+        }
+
+        function getExamStrategies(style) {
+            const strategies = {
+                visual: [
+                    "ارسم مخططات سريعة لتنظيم أفكارك قبل الإجابة",
+                    "استخدم الألوان في تمييز النقاط المهمة",
+                    "اقرأ السؤال بعناية وتخيل الإجابة بصرياً",
+                    "استخدم الرسوم التوضيحية في إجاباتك عند الإمكان",
+                    "راجع الورقة بصرياً للتأكد من اكتمال الإجابات"
+                ],
+                auditory: [
+                    "اقرأ الأسئلة بصوت منخفض (همس)",
+                    "كرر النقاط المهمة في ذهنك قبل كتابتها",
+                    "استخدم الحوار الداخلي لتنظيم أفكارك",
+                    "اقرأ إجاباتك بصوت منخفض للمراجعة",
+                    "استمع لتعليمات المراقب بعناية"
+                ],
+                kinesthetic: [
+                    "تحرك في مقعدك بهدوء لتحفيز التركيز",
+                    "استخدم يديك في العد أو التفكير",
+                    "اكتب نقاط سريعة قبل الإجابة التفصيلية",
+                    "خذ فترات راحة قصيرة لتمديد العضلات",
+                    "استخدم القلم كأداة تفكير (دون الكتابة على الورقة)"
+                ]
+            };
+            return strategies[style] || [];
+        }
+
+        function getRecommendedTools(style) {
+            const tools = {
+                visual: [
+                    {
+                        name: "MindMeister",
+                        icon: "🗺️",
+                        description: "لإنشاء خرائط ذهنية تفاعلية ومشاركتها"
+                    },
+                    {
+                        name: "Canva",
+                        icon: "🎨",
+                        description: "لتصميم ملصقات ومواد بصرية تعليمية"
+                    },
+                    {
+                        name: "Anki",
+                        icon: "📚",
+                        description: "بطاقات تعليمية ذكية مع صور ورسوم"
+                    }
+                ],
+                auditory: [
+                    {
+                        name: "Audacity",
+                        icon: "🎙️",
+                        description: "لتسجيل وتحرير الملاحظات الصوتية"
+                    },
+                    {
+                        name: "Spotify",
+                        icon: "🎵",
+                        description: "للاستماع لموسيقى التركيز والبودكاست التعليمية"
+                    },
+                    {
+                        name: "Voice Recorder",
+                        icon: "📱",
+                        description: "لتسجيل المحاضرات والملخصات الصوتية"
+                    }
+                ],
+                kinesthetic: [
+                    {
+                        name: "GoodNotes",
+                        icon: "✍️",
+                        description: "للكتابة اليدوية الرقمية والرسم"
+                    },
+                    {
+                        name: "Forest",
+                        icon: "🌳",
+                        description: "لإدارة الوقت مع فترات راحة منتظمة"
+                    },
+                    {
+                        name: "Duolingo",
+                        icon: "🦉",
+                        description: "تعلم تفاعلي مع أنشطة عملية"
+                    }
+                ]
+            };
+            return tools[style] || [];
+        }
+
+        // Additional Functions
+        function shareResults() {
+            const dominantStyle = Object.keys(answers).reduce((a, b) => 
+                answers[a] > answers[b] ? a : b
+            );
+            
+            const styleNames = {
+                visual: "المتعلم البصري",
+                auditory: "المتعلم السمعي", 
+                kinesthetic: "المتعلم الحركي"
+            };
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'نتائج اختبار نمط التعلم',
+                    text: `اكتشفت أن نمط التعلم الخاص بي هو: ${styleNames[dominantStyle]}! جرب الاختبار بنفسك.`,
+                    url: window.location.href
+                });
+            } else {
+                // Fallback for browsers that don't support Web Share API
+                const text = `اكتشفت أن نمط التعلم الخاص بي هو: ${styleNames[dominantStyle]}! جرب الاختبار بنفسك: ${window.location.href}`;
+                navigator.clipboard.writeText(text).then(() => {
+                    showNotification('تم نسخ النتائج إلى الحافظة!', 'success');
+                });
+            }
+        }
+
+        function downloadResults() {
+            const dominantStyle = Object.keys(answers).reduce((a, b) => 
+                answers[a] > answers[b] ? a : b
+            );
+            
+            const total = Object.values(answers).reduce((sum, count) => sum + count, 0);
+            const percentages = {
+                visual: Math.round((answers.visual / total) * 100),
+                auditory: Math.round((answers.auditory / total) * 100),
+                kinesthetic: Math.round((answers.kinesthetic / total) * 100)
+            };
+
+            const styleNames = {
+                visual: "المتعلم البصري",
+                auditory: "المتعلم السمعي", 
+                kinesthetic: "المتعلم الحركي"
+            };
+
+            const reportContent = `تقرير تحليل نمط التعلم الشخصي
+=====================================
+
+معلومات الطالب:
+الاسم: ${currentStudentName}
+تاريخ الاختبار: ${new Date().toLocaleDateString('ar-SA')}
+وقت الاختبار: ${new Date().toLocaleTimeString('ar-SA')}
+
+=====================================
+النتائج الرئيسية:
+=====================================
+
+النمط المهيمن: ${styleNames[dominantStyle]}
+
+التوزيع التفصيلي للنتائج:
+• المتعلم البصري: ${percentages.visual}% (${answers.visual} من ${total} إجابة)
+• المتعلم السمعي: ${percentages.auditory}% (${answers.auditory} من ${total} إجابة)  
+• المتعلم الحركي: ${percentages.kinesthetic}% (${answers.kinesthetic} من ${total} إجابة)
+
+=====================================
+خصائص نمط التعلم الخاص بك:
+=====================================
+
+${getStudyTechniques(dominantStyle).map((tech, i) => `${i+1}. ${tech.title}
+   ${tech.description}`).join('\n\n')}
+
+=====================================
+نصائح لبيئة الدراسة المثالية:
+=====================================
+
+${getEnvironmentTips(dominantStyle).map((tip, i) => `${i+1}. ${tip}`).join('\n')}
+
+=====================================
+تقنيات الحفظ والتذكر المناسبة لك:
+=====================================
+
+${getMemoryTechniques(dominantStyle).map((tech, i) => `${i+1}. ${tech.title}
+   ${tech.description}`).join('\n\n')}
+
+=====================================
+استراتيجيات النجاح في الامتحانات:
+=====================================
+
+${getExamStrategies(dominantStyle).map((strategy, i) => `${i+1}. ${strategy}`).join('\n')}
+
+=====================================
+الأدوات والموارد المفيدة:
+=====================================
+
+${getRecommendedTools(dominantStyle).map((tool, i) => `${i+1}. ${tool.name}
+   ${tool.description}`).join('\n\n')}
+
+=====================================
+ملاحظات إضافية:
+=====================================
+
+• هذا التحليل يعتمد على إجاباتك في الاستبيان المكون من ${questions.length} سؤال
+• يمكنك إعادة الاختبار في أي وقت لمراجعة النتائج
+• تذكر أن معظم الأشخاص يجمعون بين أكثر من نمط تعلم واحد
+• استخدم هذه النتائج كدليل لتحسين طريقة تعلمك
+
+=====================================
+تم إنشاء هذا التقرير بواسطة:
+نظام تحليل أنماط التعلم المتقدم
+تاريخ الإنشاء: ${new Date().toLocaleDateString('ar-SA')} - ${new Date().toLocaleTimeString('ar-SA')}
+=====================================
+`;
+
+            // Create and download the file with better formatting
+            const blob = new Blob(['\ufeff' + reportContent], { 
+                type: 'text/plain;charset=utf-8' 
+            });
+            
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `تقرير-نمط-التعلم-${currentStudentName.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.txt`;
+            
+            // Ensure the download actually happens
+            document.body.appendChild(a);
+            a.style.display = 'none';
+            a.click();
+            
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            showNotification('تم تحميل التقرير الشامل بنجاح! 📄', 'success');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg text-white font-semibold transform translate-x-full transition-transform duration-300 ${
+                type === 'success' ? 'bg-green-500' : 
+                type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(full)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Quick Results Functions
+        function showQuickResults() {
+            const results = JSON.parse(localStorage.getItem('studentResults') || '[]');
+            
+            // Update quick stats
+            document.getElementById('quick-total').textContent = results.length;
+            
+            const styleCounts = {
+                visual: results.filter(r => r.dominantStyle === 'visual').length,
+                auditory: results.filter(r => r.dominantStyle === 'auditory').length,
+                kinesthetic: results.filter(r => r.dominantStyle === 'kinesthetic').length
+            };
+            
+            document.getElementById('quick-visual').textContent = styleCounts.visual;
+            document.getElementById('quick-auditory').textContent = styleCounts.auditory;
+            document.getElementById('quick-kinesthetic').textContent = styleCounts.kinesthetic;
+            
+            // Show recent results (last 5)
+            const recentResults = results.slice(-5).reverse();
+            const recentContainer = document.getElementById('recent-results');
+            
+            if (recentResults.length === 0) {
+                recentContainer.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-inbox text-3xl mb-2"></i>
+                        <p>لا توجد نتائج حتى الآن</p>
+                    </div>
+                `;
+            } else {
+                recentContainer.innerHTML = recentResults.map(result => {
+                    const styleInfo = {
+                        visual: { name: "بصري", color: "green", icon: "fas fa-eye" },
+                        auditory: { name: "سمعي", color: "purple", icon: "fas fa-ear-listen" },
+                        kinesthetic: { name: "حركي", color: "orange", icon: "fas fa-hand-paper" }
+                    };
+                    
+                    const style = styleInfo[result.dominantStyle];
+                    const date = new Date(result.timestamp).toLocaleDateString('ar-SA');
+                    const time = new Date(result.timestamp).toLocaleTimeString('ar-SA', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+                    
+                    return `
+                        <div class="bg-white/80 rounded-xl p-4 flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-${style.color}-100 flex items-center justify-center ml-3">
+                                    <i class="${style.icon} text-${style.color}-600"></i>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-black">${result.name}</div>
+                                    <div class="text-sm text-gray-600">متعلم ${style.name}</div>
+                                </div>
+                            </div>
+                            <div class="text-left text-sm text-gray-500">
+                                <div>${date}</div>
+                                <div>${time}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            document.getElementById('quick-results-modal').classList.remove('hidden');
+        }
+
+        function hideQuickResults() {
+            document.getElementById('quick-results-modal').classList.add('hidden');
+        }
+
+        function exportQuickCSV() {
+            const results = JSON.parse(localStorage.getItem('studentResults') || '[]');
+            if (results.length === 0) {
+                showNotification('لا توجد بيانات للتصدير', 'error');
+                return;
+            }
+            
+            const headers = ['الاسم', 'النمط المهيمن', 'بصري %', 'سمعي %', 'حركي %', 'التاريخ', 'الوقت', 'إجمالي الإجابات'];
+            const csvContent = [
+                headers.join(','),
+                ...results.map(result => [
+                    `"${result.name}"`,
+                    result.dominantStyle === 'visual' ? 'بصري' : result.dominantStyle === 'auditory' ? 'سمعي' : 'حركي',
+                    result.percentages.visual + '%',
+                    result.percentages.auditory + '%',
+                    result.percentages.kinesthetic + '%',
+                    new Date(result.timestamp).toLocaleDateString('ar-SA'),
+                    new Date(result.timestamp).toLocaleTimeString('ar-SA'),
+                    (result.answers.visual + result.answers.auditory + result.answers.kinesthetic)
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob(['\ufeff' + csvContent], { 
+                type: 'text/csv;charset=utf-8' 
+            });
+            
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `نتائج-سريعة-${new Date().toISOString().split('T')[0]}.csv`;
+            
+            // Ensure download happens
+            document.body.appendChild(a);
+            a.style.display = 'none';
+            a.click();
+            
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            showNotification('تم تصدير النتائج بنجاح! 📊', 'success');
+            hideQuickResults();
+        }
+
+        function exportQuickExcel() {
+            const results = JSON.parse(localStorage.getItem('studentResults') || '[]');
+            if (results.length === 0) {
+                showNotification('لا توجد بيانات للتصدير', 'error');
+                return;
+            }
+            
+            // Create workbook
+            const wb = XLSX.utils.book_new();
+            
+            // Summary sheet
+            const styleCounts = {
+                visual: results.filter(r => r.dominantStyle === 'visual').length,
+                auditory: results.filter(r => r.dominantStyle === 'auditory').length,
+                kinesthetic: results.filter(r => r.dominantStyle === 'kinesthetic').length
+            };
+            
+            const summaryData = [
+                ['ملخص نتائج اختبار أنماط التعلم', ''],
+                ['تاريخ التصدير: ' + new Date().toLocaleDateString('ar-SA'), ''],
+                ['وقت التصدير: ' + new Date().toLocaleTimeString('ar-SA'), ''],
+                ['', ''],
+                ['الإحصائيات العامة', ''],
+                ['إجمالي عدد الطلاب', results.length],
+                ['المتعلمون البصريون', styleCounts.visual + ' (' + Math.round((styleCounts.visual/results.length)*100) + '%)'],
+                ['المتعلمون السمعيون', styleCounts.auditory + ' (' + Math.round((styleCounts.auditory/results.length)*100) + '%)'],
+                ['المتعلمون الحركيون', styleCounts.kinesthetic + ' (' + Math.round((styleCounts.kinesthetic/results.length)*100) + '%)'],
+                ['', ''],
+                ['النمط الأكثر شيوعاً', styleCounts.visual > styleCounts.auditory && styleCounts.visual > styleCounts.kinesthetic ? 'البصري' :
+                    styleCounts.auditory > styleCounts.kinesthetic ? 'السمعي' : 'الحركي']
+            ];
+            
+            const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+            summaryWs['!cols'] = [{ wch: 25 }, { wch: 20 }];
+            summaryWs['!merges'] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: 1 } },
+                { s: { r: 1, c: 0 }, e: { r: 1, c: 1 } },
+                { s: { r: 2, c: 0 }, e: { r: 2, c: 1 } }
+            ];
+            
+            XLSX.utils.book_append_sheet(wb, summaryWs, 'الملخص');
+            
+            // Main results sheet
+            const mainData = [
+                ['رقم', 'اسم الطالب', 'النمط المهيمن', 'النسبة البصرية %', 'النسبة السمعية %', 'النسبة الحركية %', 'إجابات بصرية', 'إجابات سمعية', 'إجابات حركية', 'التاريخ', 'الوقت'],
+                ...results.map((result, index) => [
+                    index + 1,
+                    result.name,
+                    result.dominantStyle === 'visual' ? 'بصري' : result.dominantStyle === 'auditory' ? 'سمعي' : 'حركي',
+                    result.percentages.visual,
+                    result.percentages.auditory,
+                    result.percentages.kinesthetic,
+                    result.answers.visual,
+                    result.answers.auditory,
+                    result.answers.kinesthetic,
+                    new Date(result.timestamp).toLocaleDateString('ar-SA'),
+                    new Date(result.timestamp).toLocaleTimeString('ar-SA')
+                ])
+            ];
+            
+            const mainWs = XLSX.utils.aoa_to_sheet(mainData);
+            mainWs['!cols'] = [
+                { wch: 5 },   // رقم
+                { wch: 20 },  // اسم الطالب
+                { wch: 15 },  // النمط المهيمن
+                { wch: 12 },  // النسبة البصرية
+                { wch: 12 },  // النسبة السمعية
+                { wch: 12 },  // النسبة الحركية
+                { wch: 10 },  // إجابات بصرية
+                { wch: 10 },  // إجابات سمعية
+                { wch: 10 },  // إجابات حركية
+                { wch: 12 },  // التاريخ
+                { wch: 10 }   // الوقت
+            ];
+            
+            XLSX.utils.book_append_sheet(wb, mainWs, 'النتائج التفصيلية');
+            
+            // Write file
+            const fileName = `نتائج-سريعة-${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+            
+            showNotification('تم تصدير ملف Excel بنجاح! 📊', 'success');
+            hideQuickResults();
+        }
+
+        function downloadExcelResults() {
+            const dominantStyle = Object.keys(answers).reduce((a, b) => 
+                answers[a] > answers[b] ? a : b
+            );
+            
+            const total = Object.values(answers).reduce((sum, count) => sum + count, 0);
+            const percentages = {
+                visual: Math.round((answers.visual / total) * 100),
+                auditory: Math.round((answers.auditory / total) * 100),
+                kinesthetic: Math.round((answers.kinesthetic / total) * 100)
+            };
+
+            const styleNames = {
+                visual: "المتعلم البصري",
+                auditory: "المتعلم السمعي", 
+                kinesthetic: "المتعلم الحركي"
+            };
+
+            // Create workbook
+            const wb = XLSX.utils.book_new();
+            
+            // Personal results sheet
+            const personalData = [
+                ['تقرير نمط التعلم الشخصي', ''],
+                ['', ''],
+                ['معلومات الطالب', ''],
+                ['الاسم', currentStudentName],
+                ['تاريخ الاختبار', new Date().toLocaleDateString('ar-SA')],
+                ['وقت الاختبار', new Date().toLocaleTimeString('ar-SA')],
+                ['', ''],
+                ['النتائج الرئيسية', ''],
+                ['النمط المهيمن', styleNames[dominantStyle]],
+                ['', ''],
+                ['التوزيع التفصيلي', ''],
+                ['النمط البصري', percentages.visual + '%'],
+                ['النمط السمعي', percentages.auditory + '%'],
+                ['النمط الحركي', percentages.kinesthetic + '%'],
+                ['', ''],
+                ['عدد الإجابات', ''],
+                ['إجابات بصرية', answers.visual],
+                ['إجابات سمعية', answers.auditory],
+                ['إجابات حركية', answers.kinesthetic],
+                ['إجمالي الإجابات', total]
+            ];
+            
+            const personalWs = XLSX.utils.aoa_to_sheet(personalData);
+            personalWs['!cols'] = [{ wch: 25 }, { wch: 20 }];
+            
+            XLSX.utils.book_append_sheet(wb, personalWs, 'النتيجة الشخصية');
+            
+            // Study tips sheet
+            const studyTips = getStudyTechniques(dominantStyle);
+            const tipsData = [
+                ['تقنيات الدراسة المناسبة لك', ''],
+                ['', ''],
+                ...studyTips.map((tip, index) => [
+                    `${index + 1}. ${tip.title}`,
+                    tip.description
+                ])
+            ];
+            
+            const tipsWs = XLSX.utils.aoa_to_sheet(tipsData);
+            tipsWs['!cols'] = [{ wch: 30 }, { wch: 50 }];
+            
+            XLSX.utils.book_append_sheet(wb, tipsWs, 'نصائح الدراسة');
+            
+            // Memory techniques sheet
+            const memoryTechs = getMemoryTechniques(dominantStyle);
+            const memoryData = [
+                ['تقنيات الحفظ والتذكر', ''],
+                ['', ''],
+                ...memoryTechs.map((tech, index) => [
+                    `${index + 1}. ${tech.title}`,
+                    tech.description
+                ])
+            ];
+            
+            const memoryWs = XLSX.utils.aoa_to_sheet(memoryData);
+            memoryWs['!cols'] = [{ wch: 30 }, { wch: 50 }];
+            
+            XLSX.utils.book_append_sheet(wb, memoryWs, 'تقنيات الحفظ');
+            
+            // Environment tips sheet
+            const envTips = getEnvironmentTips(dominantStyle);
+            const envData = [
+                ['بيئة الدراسة المثالية', ''],
+                ['', ''],
+                ...envTips.map((tip, index) => [
+                    `${index + 1}.`,
+                    tip
+                ])
+            ];
+            
+            const envWs = XLSX.utils.aoa_to_sheet(envData);
+            envWs['!cols'] = [{ wch: 5 }, { wch: 50 }];
+            
+            XLSX.utils.book_append_sheet(wb, envWs, 'بيئة الدراسة');
+            
+            // Write file
+            const fileName = `تقرير-نمط-التعلم-${currentStudentName.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+            
+            showNotification('تم تحميل تقرير Excel الشامل بنجاح! 📊', 'success');
+        }
+
+        function updateParticipantsCount() {
+            const results = JSON.parse(localStorage.getItem('studentResults') || '[]');
+            document.getElementById('total-participants').textContent = results.length;
+        }
+
+        // Initialize
+        updateParticipantsCount();
+        showStudentNameModal();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'975e3e27d2d7db6f',t:'MTc1NjMyNTc0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
