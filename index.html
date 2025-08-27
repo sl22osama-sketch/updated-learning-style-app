@@ -24,6 +24,8 @@
             min-height: 100vh;
             color: #000000 !important;
             font-weight: 800 !important;
+            font-size: 18px !important;
+            line-height: 1.8 !important;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             text-shadow: 0 1px 2px rgba(255,255,255,0.8) !important;
@@ -579,22 +581,22 @@
                 <div class="learning-style-icon mb-6">
                     <i class="fas fa-brain"></i>
                 </div>
-                <h1 class="text-5xl font-bold text-black mb-4 typing-animation">استبيان تحديد نمط التعلم</h1>
-                <p class="text-xl text-black leading-relaxed max-w-2xl mx-auto">
+                <h1 class="text-6xl font-bold text-black mb-4 typing-animation">استبيان تحديد نمط التعلم</h1>
+                <p class="text-2xl text-black leading-relaxed max-w-2xl mx-auto">
                     اكتشف أسلوب التعلم الأنسب لك من خلال تحليل علمي متقدم يساعدك على تحسين طريقة تعلمك
                 </p>
                 <div class="flex justify-center items-center mt-6 space-x-6 space-x-reverse">
                     <div class="flex items-center text-black">
-                        <i class="fas fa-clock ml-2"></i>
-                        <span>5 دقائق</span>
+                        <i class="fas fa-clock ml-2 text-xl"></i>
+                        <span class="text-xl">5 دقائق</span>
                     </div>
                     <div class="flex items-center text-black">
-                        <i class="fas fa-chart-line ml-2"></i>
-                        <span>تحليل دقيق</span>
+                        <i class="fas fa-chart-line ml-2 text-xl"></i>
+                        <span class="text-xl">تحليل دقيق</span>
                     </div>
                     <div class="flex items-center text-black">
-                        <i class="fas fa-certificate ml-2"></i>
-                        <span>نتائج مخصصة</span>
+                        <i class="fas fa-certificate ml-2 text-xl"></i>
+                        <span class="text-xl">نتائج مخصصة</span>
                     </div>
                 </div>
             </div>
@@ -605,16 +607,16 @@
             <div class="glass-effect rounded-2xl p-6">
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex items-center text-black">
-                        <i class="fas fa-tasks ml-2"></i>
-                        <span class="font-semibold">مستوى التقدم</span>
+                        <i class="fas fa-tasks ml-2 text-xl"></i>
+                        <span class="font-semibold text-xl">مستوى التقدم</span>
                     </div>
-                    <div class="text-black font-bold" id="progress-text">0 من 12</div>
+                    <div class="text-black font-bold text-xl" id="progress-text">0 من 12</div>
                 </div>
                 <div class="relative">
                     <div class="w-full bg-gray-300 rounded-full h-4 overflow-hidden">
                         <div class="progress-bar h-4 rounded-full" id="progress-bar" style="width: 0%"></div>
                     </div>
-                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-black text-sm font-semibold" id="progress-percentage">0%</div>
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-black text-lg font-semibold" id="progress-percentage">0%</div>
                 </div>
             </div>
         </div>
@@ -631,8 +633,8 @@
 
         <!-- Navigation Buttons -->
         <div class="flex justify-between items-center mt-10" id="navigation">
-            <button id="prev-btn" class="glass-effect text-black font-semibold py-4 px-8 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 flex items-center" disabled>
-                <i class="fas fa-arrow-right ml-2"></i>
+            <button id="prev-btn" class="glass-effect text-black font-semibold py-4 px-8 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 flex items-center text-xl" disabled>
+                <i class="fas fa-arrow-right ml-2 text-xl"></i>
                 السابق
             </button>
             
@@ -640,9 +642,9 @@
                 <!-- Question indicators will be inserted here -->
             </div>
             
-            <button id="next-btn" class="btn-gradient text-white font-semibold py-4 px-8 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center" disabled>
+            <button id="next-btn" class="btn-gradient text-white font-semibold py-4 px-8 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-xl" disabled>
                 التالي
-                <i class="fas fa-arrow-left mr-2"></i>
+                <i class="fas fa-arrow-left mr-2 text-xl"></i>
             </button>
         </div>
     </div>
@@ -1454,8 +1456,8 @@ ${results.map((result, index) => `${index + 1}. الطالب: ${result.name}
                                 ${currentQuestion + 1}
                             </div>
                             <div>
-                                <h2 class="text-2xl font-bold text-black">السؤال ${currentQuestion + 1}</h2>
-                                <p class="text-gray-700">من أصل ${questions.length} أسئلة</p>
+                                <h2 class="text-3xl font-bold text-black">السؤال ${currentQuestion + 1}</h2>
+                                <p class="text-xl text-gray-700">من أصل ${questions.length} أسئلة</p>
                             </div>
                         </div>
                         <div class="text-gray-600">
@@ -1463,8 +1465,8 @@ ${results.map((result, index) => `${index + 1}. الطالب: ${result.name}
                         </div>
                     </div>
                     
-                    <div class="bg-white/80 rounded-2xl p-6 mb-8 backdrop-blur-sm">
-                        <p class="text-xl text-black leading-relaxed font-medium">${question.text}</p>
+                    <div class="bg-white/80 rounded-2xl p-8 mb-8 backdrop-blur-sm">
+                        <p class="text-2xl text-black leading-relaxed font-medium">${question.text}</p>
                     </div>
                     
                     <div class="space-y-4">
@@ -1477,7 +1479,7 @@ ${results.map((result, index) => `${index + 1}. الطالب: ${result.name}
                                     </div>
                                 </div>
                                 <div class="flex-1">
-                                    <span class="text-black text-lg font-medium leading-relaxed">${option.text}</span>
+                                    <span class="text-black text-xl font-medium leading-relaxed">${option.text}</span>
                                 </div>
                                 <div class="text-gray-600">
                                     <i class="fas fa-chevron-left"></i>
@@ -2623,5 +2625,5 @@ ${getRecommendedTools(dominantStyle).map((tool, i) => `${i+1}. ${tool.name}
         updateParticipantsCount();
         showStudentNameModal();
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'975e3e27d2d7db6f',t:'MTc1NjMyNTc0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'975e4f6a048c2917',t:'MTc1NjMyNjQ1My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
